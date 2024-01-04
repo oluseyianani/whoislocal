@@ -1,0 +1,2 @@
+DEV_CLI_IMAGE=php:8.2-apache
+COMPOSER_IMAGE=sineverba/php8xc:1.14.0

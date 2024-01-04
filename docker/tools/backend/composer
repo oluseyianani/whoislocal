@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+SCRIPTPATH="$( cd "$( dirname "${BASHSOURCE[0]}" )" && pwd )"
+. ${SCRIPTPATH}/docker/tools/backend/_common
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <composer_command>"
+  exit 1
+fi
+
+COMMAND="$1"
+
+echo "Running Composer 2 in PHP 8.2 context";
+
+docker run --rm -it \
+    -w /var/www/html \
+    -v ${SCRIPTPATH}/backend:/var/www/html \
+    --entrypoint "/usr/bin/composer" \
+    "${COMPOSER_IMAGE}" "${COMMAND}"
