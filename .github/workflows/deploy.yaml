@@ -38,4 +38,9 @@ jobs:
 
       - name: Deploy to VM
         run: |
-          find . -maxdepth 1 ! -name "." ! -name ".." -exec scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r {} "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION/$PROJECT_DIR/" \;
+          # Delete existing contents in the remote destination directory
+          ssh -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no "$REMOTE_USER"@"$REMOTE_IP" "rm -r $REMOTE_DESTINATION/$PROJECT_DIR/*"
+
+          # Copy new files and directories to the remote destination
+          find . ! -name "." ! -name ".." -exec scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r {} "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION/$PROJECT_DIR/" \;
+          scp -r -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no frontend "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION/$PROJECT_DIR/"
