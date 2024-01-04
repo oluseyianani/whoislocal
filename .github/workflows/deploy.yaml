@@ -37,7 +37,8 @@ jobs:
           ssh-keyscan -t rsa "$REMOTE_IP" >> ~/.ssh/known_hosts
 
       - name: Deploy to VM
-        run: scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r . "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
+        run: |
+          find . -maxdepth 1 ! -name "." ! -name ".." -exec scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r {} "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION" \;
 
       - name: Debugging Output - After SCP
         run: ls -alh "$REMOTE_DESTINATION"
