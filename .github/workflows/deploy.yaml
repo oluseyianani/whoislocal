@@ -42,7 +42,7 @@ jobs:
           cat ~/.ssh/id_rsa_user
 
       - name: Deploy to VM
-        run: scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r ./"$PROJECT_DIR" "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
+        run: scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r ../../ "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
 
       - name: Debugging Output - After SCP
         run: ls -alh "$REMOTE_DESTINATION"
