@@ -37,4 +37,5 @@ jobs:
         run: ssh-keyscan -t rsa "$REMOTE_IP" >> ~/.ssh/known_hosts
 
       - name: Deploy to VM
-        run: find . -maxdepth 1 ! -name "." ! -name ".." -exec scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r {} "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION" \;
+        run: |
+          find . -maxdepth 1 ! -name "." ! -name ".." -exec scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r {} "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION/$PROJECT_DIR/" \;
