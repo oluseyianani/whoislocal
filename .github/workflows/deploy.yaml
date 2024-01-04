@@ -36,13 +36,8 @@ jobs:
           chmod 600 ~/.ssh/id_rsa_user
           ssh-keyscan -t rsa "$REMOTE_IP" >> ~/.ssh/known_hosts
 
-      - name: Debugging current directory
-        run: |
-          pwd
-          ls -la
-
       - name: Deploy to VM
-        run: scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r ../ "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
+        run: scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r . "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
 
       - name: Debugging Output - After SCP
         run: ls -alh "$REMOTE_DESTINATION"
