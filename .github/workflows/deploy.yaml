@@ -1,0 +1,40 @@
+name: Deploy to GCP VM
+
+on:
+  push:
+    branches:
+      - main
+      - setup-cd-for-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      REMOTE_IP: ${{ secrets.REMOTE_IP }}
+      REMOTE_DESTINATION: ${{ secrets.REMOTE_DESTINATION }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.3.0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Create and set permissions for SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY_USER }}" > ~/.ssh/id_rsa_user
+          chmod 600 ~/.ssh/id_rsa_user
+
+      - name: Add SSH key to known hosts
+        run: ssh-keyscan -t rsa "$REMOTE_IP" >> ~/.ssh/known_hosts
+
+      - name: Deploy to VM
+        run: rsync -avz -e "ssh -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no" ./ "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION/$PROJECT_DIR/"

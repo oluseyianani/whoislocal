@@ -1,0 +1,88 @@
+version: '3'
+services:
+  app:
+    build:
+      context: ./dockerfiles/dev
+      dockerfile: frontend.Dockerfile
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./frontend:/var/www/html
+    labels:
+      - "traefik.http.routers.app.rule=Host(`app.local.${PRIMARY_DOMAIN}`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls.certresolver=myresolver"
+    depends_on:
+      - api
+      - traefik
+
+  api:
+    build:
+      context: ./dockerfiles/dev
+      dockerfile: backend.Dockerfile
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./backend:/var/www/html
+    labels:
+      - "traefik.http.routers.api.rule=Host(`api.local.${PRIMARY_DOMAIN}`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+    env_file:
+      - ./backend/.env
+    environment:
+      APP_MODE: DEV
+    depends_on:
+      - mysql
+      - traefik
+
+  mysql:
+    image: mariadb:10.6
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: whoislocal
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password@
+      MYSQL_ROOT_PASSWORD: password@
+      SERVICE_TAG: dev
+      SERVICE_NAME: mysql
+
+  traefik:
+    image: traefik:v3.0
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    container_name: traefik
+    labels:
+      - "traefik.enable=true"
+#      # Dashboard
+#      - "traefik.http.routers.traefik.rule=Host(`traefik.local.${PRIMARY_DOMAIN}`)"
+#      - "traefik.http.routers.traefik.tls=true"
+#      - "traefik.http.routers.traefik.tls.certresolver=myresolver"
+#      - "traefik.http.routers.traefik.entrypoints=websecure"
+#      - "traefik.http.routers.traefik.middlewares=authtraefik"
+      # global redirect to https
+#      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+#      - "traefik.http.routers.http-catchall.entrypoints=web"
+#      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      # middleware redirect
+#      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${TRAEFIK_SSLEMAIL}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
