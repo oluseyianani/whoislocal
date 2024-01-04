@@ -31,19 +31,21 @@ jobs:
         run: mkdir -p ~/.ssh
 
       - name: Add SSH key to known hosts
-        run: ssh-keyscan -t rsa "$REMOTE_IP" >> ~/.ssh/known_hosts
-
-      - name: Save SSH key
-        run: echo "${{ secrets.VM_SSH_KEY_USER }}" > ~/.ssh/id_rsa_user
-
-      - name: Set correct permissions for SSH key
-        run: chmod 600 ~/.ssh/id_rsa_user
+        run: |
+          ssh-keyscan -t rsa "$REMOTE_IP" >> ~/.ssh/known_hosts
+          echo "${{ secrets.VM_SSH_KEY_USER }}" > ~/.ssh/id_rsa_user
+          chmod 600 ~/.ssh/id_rsa_user
 
       - name: Debugging Output - Before SCP
-        run: ls -alh ~/.ssh && cat ~/.ssh/id_rsa_user
+        run: |
+          ls -alh ~/.ssh
+          cat ~/.ssh/id_rsa_user
+
+      - name: Debugging Output - Check SSH Agent
+        run: ssh-add -L
 
       - name: Deploy to VM
-        run: scp -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r ./"$PROJECT_DIR" "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
+        run: scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r ./"$PROJECT_DIR" "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
 
       - name: Debugging Output - After SCP
         run: ls -alh "$REMOTE_DESTINATION"
