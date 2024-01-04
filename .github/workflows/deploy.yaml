@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - setup-backend
+      - setup-cd-for-app
 
 jobs:
   deploy:
