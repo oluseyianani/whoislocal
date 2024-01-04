@@ -36,6 +36,12 @@ jobs:
           echo "${{ secrets.VM_SSH_KEY_USER }}" > ~/.ssh/id_rsa_user
           chmod 600 ~/.ssh/id_rsa_user
 
+      - name: Debugging Output - Before SCP
+        run: ls -alh ~/.ssh && cat ~/.ssh/id_rsa_user
+
       - name: Deploy to VM
         run: |
           scp -i ~/.ssh/id_rsa_user -r ./"$PROJECT_DIR" "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
+
+      - name: Debugging Output - After SCP
+        run: ls -alh "$REMOTE_DESTINATION"
