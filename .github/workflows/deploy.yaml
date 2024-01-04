@@ -27,22 +27,23 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
 
+      - name: Start SSH agent
+        run: eval $(ssh-agent -s)
+
+      - name: Add SSH key to agent
+        run: echo "${{ secrets.VM_SSH_KEY_USER }}" | ssh-add -
+
       - name: Create SSH directory
         run: mkdir -p ~/.ssh
 
       - name: Add SSH key to known hosts
         run: |
           ssh-keyscan -t rsa "$REMOTE_IP" >> ~/.ssh/known_hosts
-          echo "${{ secrets.VM_SSH_KEY_USER }}" > ~/.ssh/id_rsa_user
-          chmod 600 ~/.ssh/id_rsa_user
 
       - name: Debugging Output - Before SCP
         run: |
           ls -alh ~/.ssh
           cat ~/.ssh/id_rsa_user
-
-      - name: Debugging Output - Check SSH Agent
-        run: ssh-add -L
 
       - name: Deploy to VM
         run: scp -v -i ~/.ssh/id_rsa_user -o StrictHostKeyChecking=no -r ./"$PROJECT_DIR" "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DESTINATION"
